@@ -1,0 +1,158 @@
+# VLM2Vec Development Best Practices
+
+## Code Organization
+
+### Project Structure
+```
+VLM2Vec/
+├── src/                    # Core source code
+│   ├── model/             # Model architecture
+│   ├── data/              # Data processing
+│   ├── trainer.py         # Training infrastructure
+│   ├── loss.py           # Loss functions
+│   └── arguments.py      # Configuration
+├── experiments/           # Training/eval configs
+├── train.py              # Main training script
+├── eval.py               # Main evaluation script
+└── requirements.txt      # Dependencies
+```
+
+### Key Development Files
+- [src/arguments.py](mdc:src/arguments.py) - Define all training arguments
+- [src/utils.py](mdc:src/utils.py) - Utility functions
+- [src/logging.py](mdc:src/logging.py) - Logging configuration
+- [src/dist_utils.py](mdc:src/dist_utils.py) - Distributed training utilities
+
+## Development Guidelines
+
+### 1. Logging Best Practices
+```python
+from rich.logging import RichHandler
+import logging
+
+# Configure rich logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    datefmt="[%X]",
+    handlers=[RichHandler(rich_tracebacks=True)],
+)
+log = logging.getLogger("rich")
+```
+
+### 2. Distributed Training Support
+- Always check for distributed initialization
+- Use `print_master()` and `print_rank()` for logging
+- Handle distributed data loading properly
+- Support gradient synchronization
+
+### 3. Error Handling
+```python
+# Check for distributed setup
+if torch.distributed.is_initialized():
+    rank = torch.distributed.get_rank()
+    world_size = torch.distributed.get_world_size()
+
+# Handle checkpoint resumption
+if training_args.resume_from == 'auto':
+    resume_checkpoint_dir = find_latest_checkpoint(training_args.output_dir)
+```
+
+### 4. Configuration Management
+- Use dataclasses for argument parsing
+- Support YAML configuration files
+- Enable environment variable overrides
+- Provide sensible defaults
+
+### 5. Memory Management
+- Use gradient caching for large batches
+- Enable mixed precision training
+- Implement proper data loading with workers
+- Support gradient checkpointing
+
+## Testing and Validation
+
+### Unit Testing
+- Use pytest for unit testing
+- Test individual components in isolation
+- Mock distributed environment for local testing
+- Validate data processing pipelines
+- Test model forward/backward passes
+
+### Integration Testing
+- Test end-to-end training pipeline
+- Validate evaluation metrics
+- Test checkpoint saving/loading
+- Verify distributed training
+
+## Performance Optimization
+
+### Training Optimization
+- Use Flash Attention 2 for efficiency
+- Enable gradient accumulation
+- Optimize data loading with multiple workers
+- Use appropriate batch sizes for your hardware
+
+### Memory Optimization
+- Use gradient caching for large models
+- Enable mixed precision (bfloat16)
+- Implement proper data prefetching
+- Monitor GPU memory usage
+
+## Debugging Tips
+
+### Common Issues
+1. **Distributed training sync**: Ensure all processes have same batch size
+2. **Data loading**: Check for corrupted or missing files
+3. **Memory issues**: Monitor GPU memory and adjust batch size
+4. **Checkpoint issues**: Verify checkpoint paths and formats
+
+### Debugging Commands
+```bash
+# Check distributed setup
+echo "RANK: $RANK, LOCAL_RANK: $LOCAL_RANK, WORLD_SIZE: $WORLD_SIZE"
+
+# Monitor GPU usage
+nvidia-smi -l 1
+
+# Check data loading
+python -c "from src.data.loader.mixed_dataset import init_mixed_dataset; print('Data loading works')"
+```
+
+## Code Quality
+
+### Style Guidelines
+- Use English for all comments and output
+- Follow PEP 8 for Python code
+- Use type hints where appropriate
+- Document complex functions and classes
+
+### Documentation
+- Update README.md with new features
+- Document configuration options
+- Provide usage examples
+- Maintain changelog in CHANGELOG.md
+
+## Extension Points
+
+### Adding New Datasets
+1. Create dataset loader in `src/data/dataset/`
+2. Register with `@AutoPairDataset.register()`
+3. Add configuration to YAML files
+4. Test with small subset first
+
+### Adding New Models
+1. Add model backbone in `src/model/`
+2. Update processor in `src/model/processor.py`
+3. Add configuration options
+4. Test with existing datasets
+
+### Adding New Tasks
+1. Define task in evaluation framework
+2. Add metrics calculation
+3. Update evaluation scripts
+4. Test on validation set
+description:
+globs:
+alwaysApply: false
+---

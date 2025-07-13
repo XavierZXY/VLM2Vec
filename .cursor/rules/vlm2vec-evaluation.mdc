@@ -1,0 +1,48 @@
+# VLM2Vec Evaluation Workflow
+
+## Evaluation Components
+
+### Main Evaluation Script
+- [eval.py](mdc:eval.py) - Main evaluation script for MMEB-V2 benchmark
+- [experiments/public/eval/](mdc:experiments/public/eval/) - Evaluation configurations
+
+### Evaluation Infrastructure
+- [src/eval_utils/](mdc:src/eval_utils/) - Evaluation utilities and metrics
+- [src/data/eval_dataset/](mdc:src/eval_dataset/) - Evaluation dataset loaders
+- [src/data/collator/eval_collator.py](mdc:src/data/collator/eval_collator.py) - Evaluation data collation
+
+### Benchmark Datasets
+- MMEB-V2: 78 total datasets covering images, videos, and visual documents
+- Video tasks: retrieval, moment retrieval, classification, QA
+- Visual document tasks: document retrieval
+- Image tasks: classification, retrieval, VQA, etc.
+
+### Evaluation Metrics
+- Retrieval: R@1, R@5, R@10, mAP
+- Classification: Accuracy
+- VQA: Accuracy
+- Video: Moment retrieval metrics
+
+### Distributed Evaluation
+- Supports DDP inference on multiple GPUs
+- Streamlined evaluation process
+- Can complete full benchmark evaluation within hours
+
+## Key Evaluation Commands
+```bash
+# Run evaluation on specific tasks
+python eval.py --model_name path/to/model --task_name task_name
+
+# Run full MMEB-V2 evaluation
+python eval.py --model_name path/to/model --eval_all_tasks
+```
+
+## Evaluation Tips
+- Use distributed evaluation for faster processing
+- Monitor evaluation progress with logging
+- Check evaluation results in `experiments/public/all_scores/`
+- Compare with baseline models in leaderboard
+description:
+globs:
+alwaysApply: false
+---

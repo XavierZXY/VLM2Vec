@@ -1,0 +1,49 @@
+# VLM2Vec Training Workflow
+
+## Core Training Components
+
+### Main Entry Points
+- [train.py](mdc:train.py) - Main training script entry point
+- [experiments/public/train/train_v2-qwen2vl-2B.sh](mdc:experiments/public/train/train_v2-qwen2vl-2B.sh) - Training shell script with key parameters
+
+### Model Architecture
+- [src/model/model.py](mdc:src/model/model.py) - Core MMEBModel class implementing contrastive learning
+- [src/model/processor.py](mdc:src/model/processor.py) - Multi-modal input processing for different backbones
+
+### Data Processing Pipeline
+- [src/data/loader/mixed_dataset.py](mdc:src/data/loader/mixed_dataset.py) - Multi-dataset interleaving logic
+- [src/data/collator/train_collator.py](mdc:src/data/collator/train_collator.py) - Multi-modal data collation
+- [src/data/dataset/mmeb_dataset.py](mdc:src/data/dataset/mmeb_dataset.py) - MMEB dataset processing
+
+### Training Infrastructure
+- [src/trainer.py](mdc:src/trainer.py) - GradCacheLateProcessTrainer with distributed training support
+- [src/loss.py](mdc:src/loss.py) - Contrastive loss implementations
+- [src/arguments.py](mdc:src/arguments.py) - Training configuration arguments
+
+### Configuration Files
+- [experiments/public/train/train_alltasks.yaml](mdc:experiments/public/train/train_alltasks.yaml) - Dataset mixing configuration
+- [requirements.txt](mdc:requirements.txt) - Dependencies and versions
+
+## Key Training Parameters
+- LoRA: `--lora --lora_r 16`
+- Model: `--model_name Qwen/Qwen2-VL-2B-Instruct`
+- Pooling: `--pooling eos --normalize True`
+- Temperature: `--temperature 0.02`
+- Gradient Cache: `--grad_cache True`
+- Batch Size: `--per_device_train_batch_size 128`
+- Learning Rate: `--learning_rate 5e-5`
+
+## Data Types Supported
+1. Image-Text pairs (MMEB-train datasets)
+2. Video-Text pairs (LLaVA-Hound)
+3. Visual Document pairs (Vidore, VisRAG)
+
+## Training Tips
+- Use gradient caching for large batch training
+- Interleave different datasets with weights
+- Support checkpoint resumption with `--resume_from auto`
+- Monitor training with WandB integration
+description:
+globs:
+alwaysApply: false
+---

@@ -1,0 +1,117 @@
+# VLM2Vec Model Architecture
+
+## Core Model Components
+
+### Main Model Class
+- [src/model/model.py](mdc:src/model/model.py) - MMEBModel implementing contrastive learning
+- [src/model/processor.py](mdc:src/model/processor.py) - Multi-modal input processing for different backbones
+- [src/model/utils.py](mdc:src/model/utils.py) - Model utility functions
+
+### Model Backbones Supported
+- **Qwen2-VL**: Primary backbone for V2 models
+- **Qwen2.5-VL**: Latest Qwen vision-language model
+- **LLaVA-Next**: Alternative backbone option
+- **Phi3-V**: Compact vision-language model
+- **InternVideo2**: Video understanding model
+
+### Model Architecture Features
+
+#### 1. Multi-Modal Encoding
+```python
+# Encode different input types
+def encode_input(self, input):
+    # Text-only encoding
+    if "input_ids" in input.keys():
+        text_output = self.encoder.get_text_encoder()(...)
+    
+    # Video encoding  
+    elif "pixel_values" in input.keys():
+        _, vfeat = self.encoder.encode_vision(...)
+    
+    # Image encoding
+    else:
+        hidden_states = self.encoder(**input, ...)
+```
+
+#### 2. Pooling Strategies
+- **EOS pooling**: Use end-of-sequence token representation
+- **Last pooling**: Use last token representation
+- **Normalization**: Optional L2 normalization
+
+#### 3. Contrastive Learning
+- Temperature-scaled cosine similarity
+- In-batch negative sampling
+- Distributed contrastive loss support
+
+### LoRA Integration
+```python
+# LoRA configuration
+lora_config = LoraConfig(
+    r=model_args.lora_r,  # Default: 16
+    lora_alpha=model_args.lora_alpha,
+    target_modules=model_args.lora_target_modules.split(','),
+    lora_dropout=model_args.lora_dropout,
+    init_lora_weights="gaussian",
+    use_dora=True,
+    inference_mode=False
+)
+```
+
+### Model Building Process
+1. **Load Base Model**: Load pre-trained vision-language model
+2. **Apply LoRA**: Add LoRA adapters for efficient fine-tuning
+3. **Configure Pooling**: Set pooling strategy and normalization
+4. **Setup Processor**: Configure multi-modal input processing
+
+## Key Model Parameters
+
+### Training Parameters
+- `pooling`: 'eos' or 'last' - pooling strategy
+- `normalize`: True/False - L2 normalization
+- `temperature`: 0.02 - contrastive learning temperature
+- `lora_r`: 16 - LoRA rank
+- `lora_alpha`: 32 - LoRA alpha parameter
+
+### Model Backbone Configuration
+```python
+# Qwen2-VL configuration
+config._attn_implementation = "flash_attention_2"
+config.padding_side = "left"
+config.use_cache = False
+```
+
+## Model Processing Pipeline
+
+### 1. Input Processing
+- Text tokenization with special tokens
+- Image/video frame processing
+- Multi-modal sequence construction
+
+### 2. Forward Pass
+- Encode query and target inputs
+- Extract representations using pooling
+- Compute contrastive similarity
+
+### 3. Loss Computation
+- Temperature-scaled cosine similarity
+- Cross-entropy loss with in-batch negatives
+- Optional distributed loss scaling
+
+## Model Saving/Loading
+```python
+# Save model
+model.save(output_dir)
+
+# Load model
+model = MMEBModel.load(model_args, is_trainable=True)
+```
+
+## Architecture Tips
+- Use Flash Attention 2 for efficient attention computation
+- Enable gradient checkpointing for memory efficiency
+- Use mixed precision training (bfloat16)
+- Support distributed training with DDP
+description:
+globs:
+alwaysApply: false
+---

@@ -1,0 +1,76 @@
+# VLM2Vec Data Processing Pipeline
+
+## Dataset Structure
+
+### Multi-Modal Data Types
+- **Image-Text**: MMEB-train datasets (20+ tasks)
+- **Video-Text**: LLaVA-Hound video captioning and QA
+- **Visual Document**: Vidore, VisRAG document understanding
+
+### Dataset Configuration
+- [experiments/public/train/train_alltasks.yaml](mdc:experiments/public/train/train_alltasks.yaml) - Main dataset mixing configuration
+- [experiments/public/data/download_data.sh](mdc:experiments/public/data/download_data.sh) - Data download script
+
+### Dataset Loaders
+- [src/data/dataset/mmeb_dataset.py](mdc:src/data/dataset/mmeb_dataset.py) - MMEB image-text dataset processing
+- [src/data/dataset/llavahound_dataset_caption.py](mdc:src/data/dataset/llavahound_dataset_caption.py) - Video captioning dataset
+- [src/data/dataset/llavahound_dataset_qa.py](mdc:src/data/dataset/llavahound_dataset_qa.py) - Video QA dataset
+- [src/data/dataset/vidore_dataset.py](mdc:src/data/dataset/vidore_dataset.py) - Visual document dataset
+- [src/data/dataset/visrag_dataset.py](mdc:src/data/dataset/visrag_dataset.py) - Visual RAG dataset
+
+### Data Processing Components
+- [src/data/loader/mixed_dataset.py](mdc:src/data/loader/mixed_dataset.py) - Multi-dataset interleaving
+- [src/data/collator/train_collator.py](mdc:src/data/collator/train_collator.py) - Multi-modal data collation
+- [src/data/collator/eval_collator.py](mdc:src/data/collator/eval_collator.py) - Evaluation data collation
+
+## Data Processing Flow
+
+### 1. Dataset Loading
+```python
+# Dataset configuration in YAML
+dataset_name: TIGER-Lab/MMEB-train
+subset_name: ImageNet_1K
+dataset_split: original
+image_dir: vlm2vec_train/MMEB-train/image
+num_sample_per_subset: 100000
+weight: 1
+```
+
+### 2. Multi-Modal Input Processing
+- Text: Tokenization with special tokens for images/videos
+- Images: Resize and convert to tensor format
+- Videos: Extract frames and process as image sequences
+- Documents: Process as multi-page images
+
+### 3. Data Collation
+- Batch multiple samples together
+- Handle variable-length sequences
+- Apply padding and attention masks
+- Process multi-modal inputs (text + visual)
+
+## Key Data Processing Features
+
+### Image Processing
+- Support for different resolutions (high: 1344x1344, mid: 672x672, low: 128x128)
+- Smart resizing with aspect ratio preservation
+- Image decay factor for progressive resolution reduction
+
+### Video Processing
+- Frame extraction (default: 8 frames per video)
+- Middle frame selection for single-frame processing
+- Support for video captioning and QA tasks
+
+### Document Processing
+- Multi-page document handling
+- OCR text extraction and alignment
+- Visual document retrieval tasks
+
+## Data Loading Tips
+- Use lazy loading for large image datasets
+- Implement proper error handling for corrupted data
+- Support distributed data loading across multiple workers
+- Cache processed data for faster training
+description:
+globs:
+alwaysApply: false
+---
