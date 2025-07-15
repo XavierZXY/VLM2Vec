@@ -44,6 +44,11 @@ def main():
     model_args: ModelArguments
     data_args: DataArguments
     training_args: TrainingArguments
+    # log args
+    # logger.info(f"******** model_args ******** \n {model_args}")
+    # logger.info(f"******** data_args ******** \n {data_args}")
+    # logger.info(f"******** training_args ******** \n {training_args}")
+    # exit()
 
     # DEBUG PRINTS for Distributed Setup
     print("Distributed init debug info:")

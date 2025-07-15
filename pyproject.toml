@@ -13,6 +13,7 @@ dependencies = [
     "hjson>=3.1.0",
     "hnswlib>=0.8.0",
     "huggingface-hub>=0.33.4",
+    "marimo>=0.14.10",
     "ninja>=1.11.1.4",
     "numpy==1.26.4",
     "opencv-contrib-python>=4.11.0.86",
