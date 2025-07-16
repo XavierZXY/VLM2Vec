@@ -20,6 +20,7 @@ dependencies = [
     "opencv-python>=4.11.0.86",
     "peft>=0.16.0",
     "pillow>=11.3.0",
+    "pre-commit>=4.2.0",
     "py-cpuinfo>=9.0.0",
     "qwen-vl-utils[decord]>=0.0.8",
     "ray>=2.47.1",
